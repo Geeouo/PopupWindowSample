@@ -37,17 +37,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showMxNaviKeybroad() {
+        //加载键盘布局
         View keybroadView = LayoutInflater.from(MainActivity.this).inflate(R.layout.view_keybroad, null);
+        //初始化键盘布局控件
         initKeybroadView(keybroadView);
+        //创建popup实例
         popupWindow = new PopupWindow(keybroadView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-        popupWindow.setFocusable(false);
+        //再次设置backgrounddrawable,避免不同机型上出现bug
         popupWindow.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.keybroadcolor)));
+        //设置获取焦点false，edittext需要
+        popupWindow.setFocusable(false);
+        //设置外部可触摸
         popupWindow.setOutsideTouchable(true);
+        //设置进出场动画
         popupWindow.setAnimationStyle(R.style.anim_Popupwindow);
+        //展示
         popupWindow.showAtLocation(findViewById(android.R.id.content), Gravity.BOTTOM, 0, 0);
+        //设置popup#dismiss()监听器
         popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {
+                //popup关闭时重置isSHowingMxNaviKeybroad标志位
                 isSHowingMxNaviKeybroad = false;
             }
         });
@@ -61,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 Editable editable = et_input.getText();
                 editable.insert(et_input.getSelectionStart(), "new" + (i++));
                 //et_input.setText(et + " new" + (i++));
@@ -79,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
         int sdkInt = Build.VERSION.SDK_INT;
         if (sdkInt >= 11) {
             try {
+                //固定写法
                 Class<EditText> cls = EditText.class;
                 Method setShowSoftInputOnFocus;
                 setShowSoftInputOnFocus = cls.getMethod("setShowSoftInputOnFocus", boolean.class);
@@ -105,13 +115,15 @@ public class MainActivity extends AppCompatActivity {
                  et.setInputType(InputType.TYPE_NULL); // disable soft input
                  et.onTouchEvent(event); // call native handler
                  et.setInputType(inType); // restore input type*/
+
+                 //触摸会触发初次ontouch() 添加标志位控制
                 if (!isSHowingMxNaviKeybroad) {
                     hideSystemSofeKeyboard(et);
                     showMxNaviKeybroad();
                     isSHowingMxNaviKeybroad = true;
                     Log.e("geetag", "onTouch: ");
                 }
-
+                //true 无光标 false有光标
                 return false;
             }
         });
@@ -119,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
         et.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //判断光标是否在文本中间
+                //如果光标在文本中间，则不需要每次都重置光标到eidttext end位置
                 if (et.getSelectionStart() < et.getText().length())
                     isNeedRemoveCursorToEnd = false;
                 else isNeedRemoveCursorToEnd = true;
@@ -131,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                //如果光标在文本中间，则不需要每次都重置光标到eidttext end位置
                 if (isNeedRemoveCursorToEnd)
                     et.setSelection(et.length());
             }
